@@ -2,24 +2,41 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-# Cabeçalho do app
-st.header("🚗 Dashboard de anúncios de vendas de carros")
+# Carregar os dados
+df = pd.read_csv('vehicles_us.csv', sep='\t')
 
-# Lendo os dados com separador correto
-car_data = pd.read_csv('vehicles_us.csv', sep='\t')
+# Título
+st.title("🚗 Car Sales Dashboard")
 
-# Caixa de seleção para histograma
-build_histogram = st.checkbox('📊 Criar um histograma')
+st.markdown("""
+Explore os dados de anúncios de carros usados nos EUA.  
+Escolha as variáveis para os eixos X e Y e visualize os gráficos interativos.
+""")
 
-if build_histogram:
-    st.write('Criando um histograma para a coluna odometer')
-    fig = px.histogram(car_data, x="odometer")
-    st.plotly_chart(fig, use_container_width=True)
+st.markdown("---")
 
-# Caixa de seleção para gráfico de dispersão
-build_scatter = st.checkbox('📈 Criar gráfico de dispersão')
+# Lista de colunas numéricas para os gráficos
+numeric_cols = df.select_dtypes(include='number').columns.tolist()
 
-if build_scatter:
-    st.write('Criando gráfico de dispersão entre odômetro e preço')
-    fig2 = px.scatter(car_data, x="odometer", y="price")
-    st.plotly_chart(fig2, use_container_width=True)
+# Seleção de eixos
+x_axis = st.selectbox("📌 Escolha o eixo X", options=numeric_cols, index=numeric_cols.index(
+    'odometer') if 'odometer' in numeric_cols else 0)
+y_axis = st.selectbox("📌 Escolha o eixo Y", options=numeric_cols,
+                      index=numeric_cols.index('price') if 'price' in numeric_cols else 1)
+
+st.markdown("---")
+
+# Botões para gerar gráficos
+if st.button("📊 Gerar histograma do eixo X"):
+    fig_hist = px.histogram(df, x=x_axis, nbins=50,
+                            title=f"Distribuição de {x_axis}")
+    st.plotly_chart(fig_hist, use_container_width=True)
+
+if st.button("📈 Gerar gráfico de dispersão"):
+    fig_scatter = px.scatter(df, x=x_axis, y=y_axis,
+                             title=f"{x_axis} vs {y_axis}")
+    st.plotly_chart(fig_scatter, use_container_width=True)
+
+st.markdown("---")
+st.markdown(
+    "Desenvolvido por **Andreza Carrano** | [GitHub](https://github.com/andrezacarrano)")
